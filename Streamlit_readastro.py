@@ -7,6 +7,9 @@
 import streamlit as st
 from GetPhrases import GetPhrases
 import pandas
+import numpy as np
+import requests
+from urllib.parse import urlencode, quote_plus
 #from newsapi import NewsApiClient
 
 # Set up News API client
