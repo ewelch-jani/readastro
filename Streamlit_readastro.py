@@ -5,7 +5,7 @@
 
 
 import streamlit as st
-from Untitled import GetPhrases
+from GetPhrases import GetPhrases
 import pandas
 #from newsapi import NewsApiClient
 
