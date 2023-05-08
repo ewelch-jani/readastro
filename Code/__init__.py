@@ -1,1 +1,1 @@
-from GetPhrases import *
+from .GetPhrases import *
