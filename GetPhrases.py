@@ -41,7 +41,6 @@ class GetPhrases():
         get_context(self, phrase): Retrieves sentences containing the given phrase from the abstracts.
         get_article(self, phrase): Retrieves information (title, abstract, link) about articles containing the given phrase.
         suggest_review_articles(self): Suggests review articles related to the keywords.
-        make_questions(self, phrase): Creates a list of questions based on the given phrase (not implemented).
         find_acronyms_advanced(self): Finds acronyms and their definitions using advanced techniques.
         find_acronyms(self): Finds acronyms and their definitions using simple techniques.
     """
