@@ -1,19 +1,10 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[3]:
-
-
 import streamlit as st
 from GetPhrases import GetPhrases
 import pandas
 import numpy as np
 import requests
 from urllib.parse import urlencode, quote_plus
-#from newsapi import NewsApiClient
 
-# Set up News API client
-#newsapi = NewsApiClient(api_key='YOUR_API_KEY')
 
 # Define Streamlit app
 st.title('readastro')
@@ -30,20 +21,6 @@ if query:
     obj = GetPhrases(keywords,n=50)
         
 
-# Define the phrase and related questions and answers
-
-
-# Display the questions and get the user's answers
-#for i, question in enumerate(questions):
-#    st.write(f"Question {i+1}: {question['question']}")
-#    if question["type"] == "multiple_choice":
-#        user_answer = st.radio("Select an answer:", options=question["options"])
-#    else:
-#        user_answer = st.text_input("Type your answer here:")
-#    if user_answer.lower() == question["answer"].lower():
-#        st.write("Correct!")
-#    else:
-#        st.write(f"Incorrect. The correct answer is '{question['answer']}'.")
                  
 
 options = ["None", "Common Words", "Common Phrases", "Find Acronyms", "Recommend Review Article"]
@@ -100,7 +77,7 @@ if selected_option == "Find Acronyms":
     
     # Define the Streamlit app
     def app():
-        # Add a dropdown menu to select the phrase
+        # Add a dropdown menu to select the acronym
         selected_phrase = st.selectbox('Select an acronym:', acronyms)
     
         # Add a dropdown menu to select the action
