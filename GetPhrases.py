@@ -6,11 +6,59 @@ from urllib.parse import urlencode, quote_plus
 
 
 class GetPhrases():
-    '''
-    A good doc string explaining your Class
-    '''
+    """
+    A class for extracting phrases and information from abstracts.
+
+    Args:
+        keywords (str): Keywords for searching abstracts.
+        token (str): API token for accessing the ADS database. Defaults to "Fr3Tux4mhboAq9FvShdtTpZh3JtM9UL73zIyVsng".
+        n (int): Number of rows to retrieve from the search results. Defaults to 50.
+
+    Attributes:
+        token (str): API token for accessing the ADS database.
+        rows (int): Number of rows retrieved from the search results.
+        keywords (str): Keywords used for searching abstracts.
+        abstracts (str): Concatenated abstracts of the search results.
+        indiv_abstracts (list): List of individual abstracts from the search results.
+        titles (list): List of titles from the search results.
+        links (list): List of links to the full articles.
+        whole (str): Lowercased and punctuation-removed version of the abstracts.
+        words (list): List of individual words extracted from the abstracts.
+        sortedwords (list): List of words sorted by frequency in the abstracts.
+        sciencewords (list): List of science-related words extracted from the sorted words.
+        sortedphrases (list): List of sorted phrases extracted from the abstracts.
+        trimmed (list): List of trimmed phrases, removing repeated phrases.
+
+    Methods:
+        encode(self): Encodes the keywords for the API query.
+        get_abstract(self): Retrieves abstracts and other information from the API.
+        get_links(self): Retrieves links to the full articles from the API.
+        get_words(self): Extracts individual words from the abstracts and sorts them by frequency.
+        get_science_words(self): Extracts science-related words from the sorted words.
+        get_phrases(self): Extracts phrases of four or more words from the abstracts.
+        trim_phrases(self): Trims phrases by removing repeated phrases.
+        get_best_paper(self): Finds the best paper based on phrase count and returns the link.
+        get_context(self, phrase): Retrieves sentences containing the given phrase from the abstracts.
+        get_article(self, phrase): Retrieves information (title, abstract, link) about articles containing the given phrase.
+        suggest_review_articles(self): Suggests review articles related to the keywords.
+        make_questions(self, phrase): Creates a list of questions based on the given phrase (not implemented).
+        find_acronyms_advanced(self): Finds acronyms and their definitions using advanced techniques.
+        find_acronyms(self): Finds acronyms and their definitions using simple techniques.
+    """
     
     def __init__(self, keywords, token="Fr3Tux4mhboAq9FvShdtTpZh3JtM9UL73zIyVsng", n=50):
+        
+        
+        """
+        Initializes a GetPhrases instance.
+        
+        ---
+        Parameters:
+            keywords (list): List of keywords to search for.
+            token (str): API token for accessing the document database. Default is "Fr3Tux4mhboAq9FvShdtTpZh3JtM9UL73zIyVsng".
+            n (int): Number of rows to retrieve from the API response. Default is 50.
+        """
+        
         self.token = token
         self.rows = n
         self.keywords = keywords
@@ -21,6 +69,10 @@ class GetPhrases():
         
         
     def encode(self):
+        """
+        Encodes the keywords and other parameters into a query string format for the API request.
+        """
+        
         self.query = urlencode({"q": self.keywords,
                            "fl": "title, bibcode, DOI, abstract",
                            "rows": self.rows
@@ -28,6 +80,14 @@ class GetPhrases():
         
 
     def get_abstract(self):
+        
+        """
+        Retrieves the abstracts, titles, and links from the API response and stores them in the object.
+        
+        ---
+        Returns:
+            self.abstracts (str): The concatenated abstracts
+        """
         
         self.results = requests.get("https://api.adsabs.harvard.edu/v1/search/query?{}".format(self.query), \
                        headers={'Authorization': 'Bearer ' + self.token})
@@ -49,6 +109,14 @@ class GetPhrases():
         
     
     def get_links(self):
+        """
+        Retrieves the links for each document in the API response and returns them as a list.
+        
+        ---
+        Returns:
+            self.links (list): List of document links.
+        """
+        
         self.results = requests.get("https://api.adsabs.harvard.edu/v1/search/query?{}".format(self.query), \
                        headers={'Authorization': 'Bearer ' + self.token})
         
@@ -64,6 +132,11 @@ class GetPhrases():
     
         
     def get_words(self):
+        '''
+        Processes the abstracts to extract individual words, their counts, and sorts them in descending order.
+        '''
+        
+        
         self.whole = self.abstracts.lower().replace('.', '').replace(',', '').replace('!', '').replace('?', '')
         self.words = self.whole.split()
         values, counts = np.unique(self.words, return_counts=True)
@@ -73,6 +146,14 @@ class GetPhrases():
     
     
     def get_science_words(self):
+        '''
+        Filters out common words from the list of sorted words and returns a list of science-related words.
+        
+        ---
+        Returns:
+            self.sciencewords (list): List of science-related words.
+        
+        '''
         common_words = [
             'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'I',
             'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at',
@@ -97,6 +178,17 @@ class GetPhrases():
         
     
     def get_phrases(self):
+        '''
+        Extracts the most common phrases of four or more words from the abstracts and returns them as a list, using the method get_trimmed 
+        to remove phrases that are subsets of other phrases.
+        
+        ---
+        Returns:
+            self.trimmed (list): List of phrases.
+        
+        
+        '''
+        
         # Convert the story to lowercase and remove punctuation
         story = self.abstracts.lower().replace('.', '').replace(',', '').replace('!', '').replace('?', '')
         
@@ -125,21 +217,6 @@ class GetPhrases():
             # Increase the number of words per phrase
             num_words += 1
 
-        # Print the top 10 most common bigrams
-        #for i in range(10):
-            #print(unique_bigrams[i], counts[sorted_idx[i]])
-        
-        #bigrams = [(self.words[i], self.words[i+1], self.words[i+2], self.words[i+3]) for i in range(len(self.words)-3)]
-        
-        #bigrams_arr = np.array(bigrams)
-        #unique, counts = np.unique(bigrams_arr, axis=0, return_counts=True)
-        #sorted_idx = np.argsort(-counts)
-        
-        print(all_counts)
-        
-        #mask = np.where(np.array(all_counts) > 1)
-        
-        #all_sorted_idx = np.argsort(-np.array(all_counts))
         sorted_unique_bigrams = unique_bigrams
         
         phrases = []
@@ -157,6 +234,12 @@ class GetPhrases():
     
     
     def trim_phrases(self):
+        '''
+        Trims the list of phrases by removing any phrases that are subsets of other phrases.
+        
+        '''
+        
+        
         totrim = []
         for i in range(0,len(self.sortedphrases)):
             for j in range(0,len(self.sortedphrases)):
@@ -178,16 +261,26 @@ class GetPhrases():
         
         
     def get_best_paper(self):
+        
+        '''
+        Analyzes the phrases and individual abstracts to find the best paper based on phrase frequency and returns its link.
+        
+        ---
+        Returns:
+            (str): Link to the best paper.
+        
+        '''
+        
         # Define the list of phrases to search for
         phrases_to_search = self.sortedphrases[:10]
 
-        # Define a list of candidate stories to search
-        candidate_stories = self.indiv_abstracts
+        # Define a list of candidate abstracts to search
+        candidate_abstracts = self.indiv_abstracts
         
-        # Split each story into sentences
+        # Split each abstract into sentences
         candidate_sentences = []
-        for story in candidate_stories:
-            candidate_sentences.append(story.split('. '))
+        for abstract in candidate_abstracts:
+            candidate_sentences.append(abstract.split('. '))
         
         # Flatten the list of sentences
         candidate_sentences = [sentence for sublist in candidate_sentences for sentence in sublist]
@@ -198,17 +291,31 @@ class GetPhrases():
             for j, phrase in enumerate(phrases_to_search):
                 phrase_counts[i,j] = sentence.count(phrase)
         
-        # Calculate the sum of phrase counts for each story
+        # Calculate the sum of phrase counts for each abstract
         story_counts = np.sum(phrase_counts, axis=0)
         
-        # Find the index of the story with the highest count
+        # Find the index of the abstract with the highest count
         best_story_idx = np.argmax(story_counts)
         
-        # Print the best story
+        # Print the best abstract
         return self.links[best_story_idx]
         
         
     def get_context(self,phrase):
+        '''
+        Searches the abstracts for sentences containing the specified phrase and returns the context sentences.
+        
+        ---
+        Parameters:
+            phrase (str): Phrase to search for in the abstracts.
+        
+        ---
+        Returns:
+            context (list): List of sentences containing the phrase.
+        
+        
+        '''
+        
         sentences = self.abstracts.split('. ')
         context = []
         for i in range(0,len(sentences)):
@@ -218,6 +325,19 @@ class GetPhrases():
         return context
     
     def get_article(self,phrase):
+        '''
+        Retrieves information (title, abstract, and link) for articles containing the specified phrase and returns it as a list.
+        
+        ---
+        Parameters:
+            phrase (str): Phrase to search for in the articles.
+            
+        ---
+        Returns:
+            info (list): List of dictionaries containing the article information (title, abstract, and link).
+        '''
+        
+        
         GetPhrases.get_links(self)
         
         info = []
@@ -230,6 +350,14 @@ class GetPhrases():
         return info
             
     def suggest_review_articles(self):
+        '''
+        Performs a search for review articles related to the keywords and returns the titles, abstracts, and links as a list.
+        
+        ---
+        Returns:
+            info (list): List of dictionaries containing the review article information (title, abstract, and link).
+        '''
+        
         self.review_query = urlencode({"q": "review article "+self.keywords,
                            "fl": "title, bibcode, DOI, abstract",
                            "rows": 10
@@ -272,38 +400,16 @@ class GetPhrases():
         return info
     
         
-        
-    
-    def make_questions(self,phrase):
-        pass
-        #questions = [
-        #    {
-        #        "question": "What is the phrase?",
-        #        "type": "free_response",
-        #        "answer": phrase
-        #    },
-        #    {
-        #        "question": "Which words come after 'to be'?",
-        #        "type": "multiple_choice",
-        #        "options": ["or not to be", "that is the question", "to have or not to have"],
-        #        "answer": "or not to be"
-        #    },
-        #    {
-        #        "question": "Which words come after 'that is'?",
-        #        "type": "multiple_choice",
-        #        "options": ["the answer", "the question", "the problem"],
-        #        "answer": "the question"
-        #    },
-        #    {
-        #        "question": "Complete the phrase: 'To be, or _____ to be'",
-        #        "type": "free_response",
-        #        "answer": "not"
-        #    }
-        #]
-        ## Shuffle the questions
-        #random.shuffle(questions)
     
     def find_acronyms_advanced(self):
+        '''
+        Identifies acronyms and their definitions not formatted Like This (LT) in the abstracts and returns them as a sorted list based on frequency.
+        
+        ---
+        Returns:
+            self.sorted_acronyms (list): List of acronyms based on frequency
+        '''
+        
         words = self.abstracts.split()
         acronyms = []
         i = 0
@@ -344,10 +450,19 @@ class GetPhrases():
         return self.sorted_acronyms
     
     def find_acronyms(self):
+        '''
+        Identifies acronyms formatted Like This (LT) and their definitions in the abstracts and returns them as a sorted list based on frequency.
+        
+        ---
+        Returns:
+            self.sorted_acronyms (list) = List of acronyms and definitions without repeats
+        '''
+        
         words = np.array(self.abstracts.lower().split())
         acrs = []
         defs = []
         for i in range(0,len(words)):
+            # Find words in parentheses (potential acronyms) and check if the surrounding words have the same first letters.
             if words[i][0] == "(" and words[i][-1:] == ")":
                 alength = len(words[i])-2
                 if words[i-alength][0] == words[i][1]:
@@ -359,6 +474,8 @@ class GetPhrases():
                 elif words[i-alength+1][0] == words[i][1]:
                     acrs.append(words[i][1:-1])
                     defs.append(np.array(words[i-alength+1:i]))
+        
+        # Format acronyms
         clean = []
         for i in range(0, len(defs)):
             clean.append('')
@@ -366,6 +483,7 @@ class GetPhrases():
                 clean[i] += defs[i][j]
                 clean[i] += ' '
             clean[i] += "("+acrs[i]+")"
+            
         return list(np.unique(clean))
         
         
