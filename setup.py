@@ -17,7 +17,7 @@ setuptools.setup(
      author="Elizabeth Welch-Jani",
      author_email="elizabeth.welch-jani@yale.edu",
      description="A python package to learn about a new astronomy topic based on abstracts from NASA ADS",
-     packages=["GetPhrases"]
+     packages=["Code"]
 )
 
 
